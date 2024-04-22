@@ -1,3 +1,12 @@
+# book.py - CPRG216 group assignment
+#
+# This program will be able to edit a CSV file containing the information of books.
+# For example display the book list, display book information (Genre, Author, Book ISBN ID), add books, remove books,
+# borrow books, return books, and search for books within the catalog in the file.
+# 
+# Author Ryan Cantil, Maxim Oleshko, Samarth Bhasin
+# Version 2024-04-22
+
 import book
 
 filename = ''
@@ -9,12 +18,12 @@ def main():
     load_books(book_list, filename)
     print("Book catalog has been loaded.")
     menu_header = """\
-Reader's Guild Library - Main Menu
-==================================
-1. Search for books
-2. Borrow a book
-3. Return a book
-0. Exit the system
+    Reader's Guild Library - Main Menu
+    ==================================
+    1. Search for books
+    2. Borrow a book
+    3. Return a book
+    0. Exit the system
     """
     menu_options = {
         1 : True,
@@ -26,51 +35,65 @@ Reader's Guild Library - Main Menu
     #this loop collects user input to chose a menu option, and while they choose not to quit, it keeps running
     #it also exits if the user is a library administrator so it can move to the next loop just for admins
     option = print_menu(menu_header, menu_options)
-    while option != 0 and option != 2130:
+    while option != 0:
         if option == 1:
-            search_books()
+            search_books(book_list)
+            print_books(search_books(book_list))
         elif option == 2:
             borrow_book(book_list)
         elif option == 3:
             return_book(book_list)
+        else:
+            print("Invalid Option")
         option = print_menu(menu_header, menu_options)
-    #this loop is just for library admins 
-    if option == 2130:
-        #changes menu header and options to expand the librarians choice of what to do
-        menu_header = """\
-        Reader's Guild Library - Librarian Menu
-        ==================================
-        1. Search for books
-        2. Borrow a book
-        3. Return a book
-        4. Add a book
-        5. Remove a book
-        6. Print catalog
-        0. Exit the system
-        """
-        menu_options = {
-            1 : True,
-            2 : True,
-            3 : True,
-            4 : True,
-            5 : True,
-            6 : True,
-            2130 : True,
-            0 : True
-        }
-        option = print_menu(menu_header, menu_options)
-        while option != 0:
-            if option == 1:
-                search_books()
-            elif option == 2:
-                borrow_book(book_list)
-            elif option == 3:
-                return_book(book_list)
-            elif option == 4:
-                add_book()
-            elif option == 5:
-                remove_book(book_list)
+        #this loop is just for library admins 
+        if option == 2130:
+            #changes menu header and options to expand the librarians choice of what to do
+            menu_header = """\
+            Reader's Guild Library - Librarian Menu
+            ==================================
+            1. Search for books
+            2. Borrow a book
+            3. Return a book
+            4. Add a book
+            5. Remove a book
+            6. Print catalog
+            0. Exit the system
+            """
+            menu_options = {
+                1 : True,
+                2 : True,
+                3 : True,
+                4 : True,
+                5 : True,
+                6 : True,
+                2130 : True,
+                0 : True
+            }
+            option = print_menu(menu_header, menu_options)
+            while option != 0:
+                if option == 1:
+                    search_results = search_books(book_list)  # Pass book_list as an argument
+                    print_books(search_results)  # Print the search results
+                elif option == 2:
+                    borrow_book(book_list)
+                elif option == 3:
+                   return_book(book_list)
+                elif option == 4:
+                    add_book(book_list)
+                elif option == 5:
+                    remove_book(book_list)
+                elif option == 6:
+                    print_books(book_list)
+                option = print_menu(menu_header, menu_options)
+    save_books(book_list, filename)
+    print("-- Exit the system --")
+    print("Book catalog has been saved. \nGood Bye!")
 
+def save_books(book_list, filename):
+    with open(filename, 'w') as file:
+        for book in book_list:
+            file.write(f"{book.get_isbn()}, {book.get_title()}, {book.get_author()}, {book.get_genre_name()}, {book.get_availability()}\n")
 
 
 #loads books into a list called 'book_list'
@@ -82,21 +105,48 @@ def load_books(book_list, filename):
             availability = True
         else:
             availability = False
-        book_list.append(book.Book(raw_line[0], raw_line[1], raw_line[2], int(raw_line[3]), availability))
+        genre_index = int(raw_line[3])
+        book_list.append(book.Book(raw_line[0], raw_line[1], raw_line[2], int(raw_line[3]), genre_index, availability))
     file_content.close()
     return len(book_list)
 
 #receives variables menu header and menu options to print current menu and also check if choice is valid 
 def print_menu(menu_header, menu_options):
     print(menu_header)
-    selection = int(input("Enter your selection: "))
-    while menu_options[selection] != True:
-        print("Invalid option")
-        selection = int(input("Enter your selection: "))
-    return selection
+    while True:
+        selection = input("Enter your selection: ")
+        if selection.isdigit():
+            selection = int(selection)
+            if selection in menu_options:
+                return selection
+            else:
+                print("Invalid Option")
+        else:
+            print("Invalid Option")
+        
 
-def search_books():
-    pass
+def print_books(book_list):
+    print("Book Information:")
+    print("ISBN                  Title                   Author                   Genre                      Availability")
+    print("--------------------- ----------------------- ------------------------ -------------------------- ------------")
+    for book in book_list:
+        print(f"ISBN: {book.get_isbn()}, Title: {book.get_title()}, Author: {book.get_author()}, Genre: {book.get_genre_name()}, Available: {'Yes' if book.get_availability() else 'No'}")
+
+
+
+def search_books(book_list):
+    search_string = input("Enter search value: ")
+    search_results = []
+    for book in book_list:
+        if (search_string.lower() in book.get_isbn().lower() or
+            search_string.lower() in book.get_title().lower() or
+            search_string.lower() in book.get_author().lower() or
+            search_string.lower() in book.get_genre_name().lower()):
+            search_results.append(book)
+    if not search_results:
+        print("No matching books found.")
+    return search_results
+
 
 def add_book():
     pass
@@ -105,12 +155,12 @@ def add_book():
 def borrow_book(book_list):
     isbn = input("Enter the 13-digit ISBN (format 999-9999999999): ")
     book_index = find_book_by_isbn(book_list, isbn)
-    if book_index != -1:
-        if book_list[book_index] == True:
+    if book_index is not None:
+        if book_list[book_index].get_availability() == "Availabile":
             book_list[book_index].borrow_it()
-            print(f"'{book_list[book_index].get_title}' with ISBN {isbn} successfully borrowed.")
+            print(f"'{book_list[book_index].get_title()}' with ISBN {isbn} successfully borrowed.")
         else:
-            print(f"'{book_list[book_index].get_title}' with ISBN {isbn} is not currently available.")
+            print(f"'{book_list[book_index].get_title()}' with ISBN {isbn} is not currently available.")
     else:
         print("No book found with that ISBN")
     
@@ -137,12 +187,12 @@ def find_book_by_isbn(book_list, isbn):
 def return_book(book_list):
     isbn = input("Enter the 13-digit ISBN (format 999-9999999999): ")
     book_index = find_book_by_isbn(book_list, isbn)
-    if book_index != -1:
-        if book_list[book_index] == False:
+    if book_index is not None:
+        if book_list[book_index].get_availability() == "Borrowed":
             book_list[book_index].return_it()
-            print(f"'{book_list[book_index].get_title}' with ISBN {isbn} successfully returned.")
+            print(f"'{book_list[book_index].get_title()}' with ISBN {isbn} successfully returned.")
         else:
-            print(f"'{book_list[book_index].get_title}' with ISBN {isbn} is not currently borrowed.")
+            print(f"'{book_list[book_index].get_title()}' with ISBN {isbn} is not currently borrowed.")
     else:
         print("No book found with that ISBN")
     
