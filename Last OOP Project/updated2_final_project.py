@@ -97,7 +97,11 @@ Reader's Guild Library - Librarian Menu
 def save_books(book_list, filename):
     with open(filename, 'w') as file:
         for book in book_list:
-            file.write(f"{book.get_isbn()}, {book.get_title()}, {book.get_author()}, {book.get_genre_name()}, {book.get_availability()}\n")
+            if book.get_availability():
+                available_text = "True"
+            else: 
+                available_text = "False"
+            file.write(f"{book.get_isbn()}, {book.get_title()}, {book.get_author()}, {book.get_genre_name()}, {available_text}\n")
 
 
 #loads books into a list called 'book_list'
