@@ -164,7 +164,7 @@ def borrow_book(book_list):
     isbn = input("Enter the 13-digit ISBN (format 999-9999999999): ")
     book_index = find_book_by_isbn(book_list, isbn)
     if book_index  != -1:
-        if book_list[book_index] == "Available":
+        if book_list[book_index].get_availability() == "Available":
             book_list[book_index].borrow_it()
             print(f"'{book_list[book_index].get_title()}' with ISBN {isbn} successfully borrowed.")
         else:
