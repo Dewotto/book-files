@@ -1,4 +1,3 @@
-
 class Book:
     GENRES = ["Romance",
     "Mystery",
@@ -10,7 +9,7 @@ class Book:
     "Fantasy",
     "Historical Fiction",
     "Poetry"]
-    
+
     
 
 
@@ -20,6 +19,9 @@ class Book:
         self.__author = author
         self.__genre_name = genre_name
         self.__available = available
+
+    def get_genre(self):
+        return self.__genre_name 
     
     def get_isbn(self):
         return self.__isbn
@@ -52,6 +54,16 @@ class Book:
         self.__genre_name = new_genre_name
 
     def borrow_it(self):
+        if self.__available:
+            self.__available = False
+
+    
+    def return_it(self):
+        if self.__available == False:
+            self.__available = True
+
+    def __str__(self):
+        return f"{self.__isbn:<15}{self.__title:<26}{self.__author:<26}{Book.GENRES[self.__genre_name]:<21}{self.get_availability():<15}"
         if self.__available:
             self.__available = False
 
